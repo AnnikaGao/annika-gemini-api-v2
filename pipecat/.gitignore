@@ -1,0 +1,53 @@
+.vscode
+env/
+__pycache__/
+*~
+venv
+.venv
+/.idea
+#*#
+
+# Distribution / packaging
+.Python
+build/
+develop-eggs/
+dist/
+downloads/
+eggs/
+.eggs/
+lib/
+lib64/
+parts/
+sdist/
+var/
+wheels/
+share/python-wheels/
+*.egg-info/
+.installed.cfg
+*.egg
+MANIFEST
+.DS_Store
+.env
+fly.toml
+
+# Example files
+pipecat/examples/twilio-chatbot/templates/streams.xml
+pipecat/examples/bot-ready-signalling/client/react-native/node_modules/
+pipecat/examples/bot-ready-signalling/client/react-native/.expo/
+pipecat/examples/bot-ready-signalling/client/react-native/dist/
+pipecat/examples/bot-ready-signalling/client/react-native/npm-debug.*
+pipecat/examples/bot-ready-signalling/client/react-native/*.jks
+pipecat/examples/bot-ready-signalling/client/react-native/*.p8
+pipecat/examples/bot-ready-signalling/client/react-native/*.p12
+pipecat/examples/bot-ready-signalling/client/react-native/*.key
+pipecat/examples/bot-ready-signalling/client/react-native/*.mobileprovision
+pipecat/examples/bot-ready-signalling/client/react-native/*.orig.*
+pipecat/examples/bot-ready-signalling/client/react-native/web-build/
+
+# macOS
+.DS_Store
+
+
+# Documentation
+docs/api/_build/
+docs/api/api
