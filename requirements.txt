@@ -1,0 +1,4 @@
+pipecat-ai[daily]
+pipecat-ai[google]
+python-dotenv
+onnxruntime
