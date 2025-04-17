@@ -72,7 +72,7 @@ class DailyRoomProperties(BaseModel, extra="allow"):
     enable_emoji_reactions: bool = False
     eject_at_room_exp: bool = True
     enable_dialout: Optional[bool] = None
-    enable_recording: Optional[Literal["cloud", "local", "raw-tracks"]] = None
+    enable_recording: Optional[Literal["cloud", "local", "raw-tracks"]] = "cloud"
     geo: Optional[str] = None
     max_participants: Optional[int] = None
     recordings_bucket: Optional[RecordingsBucketConfig] = None
@@ -184,7 +184,7 @@ class DailyMeetingTokenProperties(BaseModel):
         description="If `true`, the user's audio will be turned off when they join the room. Defaults to `false`.",
     )
     enable_recording: Optional[Literal["cloud", "local", "raw-tracks"]] = Field(
-        default=None,
+        default="cloud",
         description="Recording settings for the token. Must be one of `cloud`, `local` or `raw-tracks`.",
     )
     enable_prejoin_ui: Optional[bool] = Field(
@@ -192,7 +192,7 @@ class DailyMeetingTokenProperties(BaseModel):
         description="If `true`, the user will see the prejoin UI before joining the room.",
     )
     start_cloud_recording: Optional[bool] = Field(
-        default=None,
+        default=True,
         description="Start cloud recording when the user joins the room. This can be used to always record and archive meetings, for example in a customer support context.",
     )
     permissions: Optional[dict] = Field(
