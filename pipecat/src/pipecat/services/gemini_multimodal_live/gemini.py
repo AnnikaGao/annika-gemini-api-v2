@@ -15,6 +15,7 @@ from typing import Any, Dict, List, Mapping, Optional, Union
 import websockets
 from loguru import logger
 from pydantic import BaseModel, Field
+from pathlib import Path
 
 from pipecat.adapters.schemas.tools_schema import ToolsSchema
 from pipecat.adapters.services.gemini_adapter import GeminiLLMAdapter
@@ -60,6 +61,17 @@ from pipecat.utils.time import time_now_iso8601
 
 from . import events
 from .audio_transcriber import AudioTranscriber
+
+
+def transcript_handler(role, message, file_dir: Path):
+    file_dir = Path(file_dir)
+    file_dir.parent.mkdir(parents=True, exist_ok=True)
+
+    with open(file_dir, "a") as f:
+        timestamp = datetime.now().strftime("%H:%M:%S.%f")[:-3]
+        if f.tell() == 0:
+            f.write("WEBVTT\n\n")
+        f.write(f"{timestamp} --> {timestamp}\n{role}: {message}\n\n")
 
 
 def language_to_gemini_language(language: Language) -> Optional[str]:
@@ -262,13 +274,9 @@ class InputParams(BaseModel):
     temperature: Optional[float] = Field(default=None, ge=0.0, le=2.0)
     top_k: Optional[int] = Field(default=None, ge=0)
     top_p: Optional[float] = Field(default=None, ge=0.0, le=1.0)
-    modalities: Optional[GeminiMultimodalModalities] = Field(
-        default=GeminiMultimodalModalities.AUDIO
-    )
+    modalities: Optional[GeminiMultimodalModalities] = Field(default=GeminiMultimodalModalities.AUDIO)
     language: Optional[Language] = Field(default=Language.EN_US)
-    media_resolution: Optional[GeminiMediaResolution] = Field(
-        default=GeminiMediaResolution.UNSPECIFIED
-    )
+    media_resolution: Optional[GeminiMediaResolution] = Field(default=GeminiMediaResolution.UNSPECIFIED)
     vad: Optional[GeminiVADParams] = Field(default=None)
     extra: Optional[Dict[str, Any]] = Field(default_factory=dict)
 
@@ -331,9 +339,7 @@ class GeminiMultimodalLiveLLMService(LLMService):
         self._sample_rate = 24000
 
         self._language = params.language
-        self._language_code = (
-            language_to_gemini_language(params.language) if params.language else "en-US"
-        )
+        self._language_code = language_to_gemini_language(params.language) if params.language else "en-US"
         self._vad_params = params.vad
 
         self._settings = {
@@ -378,9 +384,7 @@ class GeminiMultimodalLiveLLMService(LLMService):
         not respond. This is often what we want when setting the context at the beginning of a conversation.
         """
         if self._context:
-            logger.error(
-                "Context already set. Can only set up Gemini Multimodal Live context once."
-            )
+            logger.error("Context already set. Can only set up Gemini Multimodal Live context once.")
             return
         self._context = GeminiMultimodalLiveContext.upgrade(context)
         await self._create_initial_response()
@@ -418,9 +422,7 @@ class GeminiMultimodalLiveLLMService(LLMService):
         self._user_audio_buffer = bytearray()
         if self._needs_turn_complete_message:
             self._needs_turn_complete_message = False
-            evt = events.ClientContentMessage.model_validate(
-                {"clientContent": {"turnComplete": True}}
-            )
+            evt = events.ClientContentMessage.model_validate({"clientContent": {"turnComplete": True}})
             await self.send_client_event(evt)
         if self._transcribe_user_audio and self._context:
             await self._transcribe_audio_queue.put(audio)
@@ -430,15 +432,13 @@ class GeminiMultimodalLiveLLMService(LLMService):
         if not text:
             return
         logger.debug(f"[Transcription:user] {text}")
+        global SESSION_ID
+        transcript_handler("user", text, Path("transcripts" / f"{SESSION_ID}.vtt"))
         context.add_message({"role": "user", "content": [{"type": "text", "text": text}]})
-        await self.push_frame(
-            TranscriptionFrame(text=text, user_id="user", timestamp=time_now_iso8601())
-        )
+        await self.push_frame(TranscriptionFrame(text=text, user_id="user", timestamp=time_now_iso8601()))
 
     async def _transcribe_audio(self, audio, context):
-        (text, prompt_tokens, completion_tokens, total_tokens) = await self._transcriber.transcribe(
-            audio, context
-        )
+        (text, prompt_tokens, completion_tokens, total_tokens) = await self._transcriber.transcribe(audio, context)
         if not text:
             return ""
         # The only usage metrics we have right now are for the transcriber LLM. The Live API is free.
@@ -463,9 +463,7 @@ class GeminiMultimodalLiveLLMService(LLMService):
         if isinstance(frame, TranscriptionFrame):
             await self.push_frame(frame, direction)
         elif isinstance(frame, OpenAILLMContextFrame):
-            context: GeminiMultimodalLiveContext = GeminiMultimodalLiveContext.upgrade(
-                frame.context
-            )
+            context: GeminiMultimodalLiveContext = GeminiMultimodalLiveContext.upgrade(frame.context)
             # For now, we'll only trigger inference here when either:
             #   1. We have not seen a context frame before
             #   2. The last message is a tool call result
@@ -542,9 +540,7 @@ class GeminiMultimodalLiveLLMService(LLMService):
                         "top_p": self._settings["top_p"],
                         "response_modalities": self._settings["modalities"].value,
                         "speech_config": {
-                            "voice_config": {
-                                "prebuilt_voice_config": {"voice_name": self._voice_id}
-                            },
+                            "voice_config": {"prebuilt_voice_config": {"voice_name": self._voice_id}},
                             "language_code": self._settings["language"],
                         },
                         "media_resolution": self._settings["media_resolution"].value,
@@ -588,9 +584,7 @@ class GeminiMultimodalLiveLLMService(LLMService):
                 system_instruction += "\n" + self._context.extract_system_instructions()
             if system_instruction:
                 logger.debug(f"Setting system instruction: {system_instruction}")
-                config.setup.system_instruction = events.SystemInstruction(
-                    parts=[events.ContentPart(text=system_instruction)]
-                )
+                config.setup.system_instruction = events.SystemInstruction(parts=[events.ContentPart(text=system_instruction)])
 
             # Add tools if available
             if self._tools:
@@ -600,9 +594,7 @@ class GeminiMultimodalLiveLLMService(LLMService):
             # Add session resumption if enabled (transparent mode)
             if self._enable_session_resumption:
                 logger.info("Enabling Gemini Live transparent session resumption")
-                config.setup.session_resumption = events.SessionResumptionConfig(
-                    transparent=True
-                )
+                config.setup.session_resumption = events.SessionResumptionConfig(transparent=True)
 
             # Send the configuration
             await self.send_client_event(config)
@@ -909,7 +901,5 @@ class GeminiMultimodalLiveLLMService(LLMService):
 
         default_assistant_kwargs = {"expect_stripped_words": True}
         default_assistant_kwargs.update(assistant_kwargs)
-        assistant = GeminiMultimodalLiveAssistantContextAggregator(
-            context, **default_assistant_kwargs
-        )
+        assistant = GeminiMultimodalLiveAssistantContextAggregator(context, **default_assistant_kwargs)
         return GeminiMultimodalLiveContextAggregatorPair(_user=user, _assistant=assistant)

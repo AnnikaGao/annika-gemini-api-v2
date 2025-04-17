@@ -1,3 +1,4 @@
+#!/Users/donyin/miniconda3/envs/gemini-api/bin/python
 #
 # Copyright (c) 2024–2025, Daily
 #
@@ -21,6 +22,9 @@ import asyncio
 import os
 import sys
 from pathlib import Path
+import sys
+
+sys.path.append(str(Path().cwd()))
 
 # ------- this is amended by Annika --------
 sys.path.append(str(Path().cwd()))
@@ -44,6 +48,7 @@ from pipecat.pipeline.task import PipelineParams, PipelineTask
 from pipecat.processors.aggregators.openai_llm_context import OpenAILLMContext
 from pipecat.processors.frame_processor import FrameDirection, FrameProcessor
 from pipecat.processors.frameworks.rtvi import RTVIConfig, RTVIObserver, RTVIProcessor
+from pipecat.processors.transcript_processor import TranscriptProcessor
 from pipecat.services.gemini_multimodal_live.gemini import GeminiMultimodalLiveLLMService
 from pipecat.transports.services.daily import DailyParams, DailyTransport
 
@@ -156,17 +161,27 @@ async def main():
         #
         rtvi = RTVIProcessor(config=RTVIConfig(config=[]))
 
+        transcript = TranscriptProcessor()
+
         pipeline = Pipeline(
             [
                 transport.input(),
                 rtvi,
+                transcript.user(),
                 context_aggregator.user(),
                 llm,
                 ta,
                 transport.output(),
+                transcript.assistant(),
                 context_aggregator.assistant(),
             ]
         )
+
+        # Register event handler for transcript updates
+        @transcript.event_handler("on_transcript_update")
+        async def handle_update(processor, frame):
+            for msg in frame.messages:
+                print("[Transcription:bot] ", msg.content)
 
         task = PipelineTask(
             pipeline,
