@@ -38,7 +38,9 @@ from dotenv import load_dotenv
 from loguru import logger
 from PIL import Image
 from runner import configure
-
+import os
+os.environ["HTTP_PROXY"] = "http://127.0.0.1:7897"
+os.environ["HTTP_PROXYS"] = "http://127.0.0.1:7897"
 from pipecat.audio.vad.silero import SileroVADAnalyzer
 from pipecat.audio.vad.vad_analyzer import VADParams
 from pipecat.frames.frames import BotStartedSpeakingFrame, BotStoppedSpeakingFrame, Frame, OutputImageRawFrame, SpriteFrame
