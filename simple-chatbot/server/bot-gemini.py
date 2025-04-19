@@ -39,6 +39,7 @@ from loguru import logger
 from PIL import Image
 from runner import configure
 import os
+
 os.environ["HTTP_PROXY"] = "http://127.0.0.1:7897"
 os.environ["HTTP_PROXYS"] = "http://127.0.0.1:7897"
 from pipecat.audio.vad.silero import SileroVADAnalyzer
@@ -51,7 +52,7 @@ from pipecat.processors.aggregators.openai_llm_context import OpenAILLMContext
 from pipecat.processors.frame_processor import FrameDirection, FrameProcessor
 from pipecat.processors.frameworks.rtvi import RTVIConfig, RTVIObserver, RTVIProcessor
 from pipecat.processors.transcript_processor import TranscriptProcessor
-from pipecat.services.gemini_multimodal_live.gemini import GeminiMultimodalLiveLLMService
+from pipecat.services.gemini_multimodal_live.gemini import GeminiMultimodalLiveLLMService, InputParams, GeminiVADParams
 from pipecat.transports.services.daily import DailyParams, DailyTransport
 
 load_dotenv(override=True)
@@ -63,10 +64,7 @@ sprites = []
 script_dir = os.path.dirname(__file__)
 
 for i in range(1, 26):
-    # Build the full path to the image file
     full_path = os.path.join(script_dir, f"assets/robot0{i}.png")
-    # Get the filename without the extension to use as the dictionary key
-    # Open the image and convert it to bytes
     with Image.open(full_path) as img:
         sprites.append(OutputImageRawFrame(image=img.tobytes(), size=img.size, format=img.format))
 
@@ -77,6 +75,17 @@ sprites.extend(flipped)
 # Define static and animated states
 quiet_frame = sprites[0]  # Static frame for when bot is listening
 talking_frame = SpriteFrame(images=sprites)  # Animation sequence for when bot is talking
+
+
+def load_session_memory() -> str:  # this is written by me, annika
+    """this is only loaded if vtt file exists"""
+    session_id = os.getenv("SESSION_ID")
+    memory_dir = Path().cwd().parent.parent / "transcript" / f"{session_id}.vtt"
+    if not memory_dir.exists():
+        return ""
+    with open(memory_dir, "r") as f:
+        memory = f.read()
+    return memory
 
 
 class TalkingAnimation(FrameProcessor):
@@ -147,9 +156,16 @@ async def main():
             voice_id="Puck",  # Aoede, Charon, Fenrir, Kore, Puck
             transcribe_user_audio=True,
             enable_session_resumption=True,
+            params=InputParams(vad=GeminiVADParams(silence_duration_ms=300)),
         )
 
-        messages = [{"role": "user", "content": PROMPT}]
+        memory = load_session_memory()
+        if memory:
+            MEMORY_PROMPT = f">>> the session has previously happened, here is the memory: {memory}; resume from where it left off"
+        else:
+            MEMORY_PROMPT = ""
+
+        messages = [{"role": "user", "content": PROMPT + MEMORY_PROMPT}]
 
         # Set up conversation context and management
         # The context_aggregator will automatically collect conversation context
@@ -216,4 +232,13 @@ async def main():
 
 
 if __name__ == "__main__":
-    asyncio.run(main())
+    session_id = os.environ.get("SESSION_ID")  # this breaks the 10 mins limit
+    try:
+        asyncio.run(main())
+    except Exception as e:
+        print(f">>> error occurred: {e}")
+        if session_id:
+            print(f">>> resuming session {session_id}...")
+            asyncio.run(main())
+        else:
+            raise

@@ -10,13 +10,18 @@ each item may have some sub questions if the user provides the answer that indic
 
 # Interview Guide
 
-## General Briefing  
-Hi there—thank you so much for joining me today! We’ll start by chatting about your experiences with mental health apps: what you liked, what you didn’t, and everything in between. Then, we’ll dive into some of the cooler, more advanced AI‑powered features that apps are experimenting with. There are no right or wrong answers—your honest thoughts will help us build tools that truly support students like you. Feel free to speak openly and ask questions at any time!
+# Your task as the interviwer:
+> IMPORTANT: read out the initial general briefing out loud, do NOT skip this:
+> General Briefing
+Hi there thank you so much for joining me today! We’ll start by chatting about your experiences with mental health apps: what you liked, what you didn’t, and everything in between. 
+\\
+Then, we’ll dive into some of the cooler, more advanced AI‑powered features that apps are experimenting with.
+\\
+There are no right or wrong answers your honest thoughts will help us build tools that truly support students like you. Feel free to speak openly and ask questions at any time!
 
 ---
 
 ## Basic Experience with Mental Health Apps
-
 1. **App Use & Frequency**  
    What specific mental health apps have you used in the past, and how often did you use each one?
 
@@ -35,7 +40,7 @@ Hi there—thank you so much for joining me today! We’ll start by chatting abo
    Which aspects of that feature would make you most likely to use it?
 
 6. **Academic‑Specific Tools**  
-   Would including academic‑focused support—such as exam‑stress exercises or study‑break reminders—make you more inclined to use a mental health app?  
+   Would including academic‑focused support such as exam‑stress exercises or study‑break reminders make you more inclined to use a mental health app?  
    Please explain how that would affect your usage.
 
 7. **Privacy Protections**  

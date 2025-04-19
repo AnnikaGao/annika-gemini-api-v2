@@ -63,17 +63,6 @@ from . import events
 from .audio_transcriber import AudioTranscriber
 
 
-def transcript_handler(role, message, file_dir: Path):
-    file_dir = Path(file_dir)
-    file_dir.parent.mkdir(parents=True, exist_ok=True)
-
-    with open(file_dir, "a") as f:
-        timestamp = datetime.now().strftime("%H:%M:%S.%f")[:-3]
-        if f.tell() == 0:
-            f.write("WEBVTT\n\n")
-        f.write(f"{timestamp} --> {timestamp}\n{role}: {message}\n\n")
-
-
 def language_to_gemini_language(language: Language) -> Optional[str]:
     """Maps a Language enum value to a Gemini Live supported language code.
 

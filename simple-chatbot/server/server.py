@@ -1,3 +1,4 @@
+#!/Users/donyin/miniconda3/envs/gemini-api/bin/python
 #
 # Copyright (c) 2024–2025, Daily
 #
@@ -45,7 +46,6 @@ bot_procs = {}
 
 # Store Daily API helpers
 daily_helpers = {}
-
 
 def cleanup():
     """Cleanup function to terminate all bot processes.

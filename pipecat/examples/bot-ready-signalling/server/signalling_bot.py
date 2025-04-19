@@ -43,9 +43,7 @@ class SilenceFrame(OutputAudioRawFrame):
         )
 
     @staticmethod
-    def create_silent_audio_frame(
-        sample_rate: int, num_channels: int, duration: float
-    ) -> AudioRawFrame:
+    def create_silent_audio_frame(sample_rate: int, num_channels: int, duration: float) -> AudioRawFrame:
         """Create an AudioRawFrame containing silence."""
         frame_size = num_channels * 2  # 2 bytes per sample for 16-bit audio
         total_frames = int(sample_rate * duration)
@@ -58,9 +56,7 @@ async def main():
     async with aiohttp.ClientSession() as session:
         (room_url, _) = await configure(session)
 
-        transport = DailyTransport(
-            room_url, None, "Say One Thing", DailyParams(audio_out_enabled=True)
-        )
+        transport = DailyTransport(room_url, None, "Say One Thing", DailyParams(audio_out_enabled=True))
 
         tts = CartesiaTTSService(
             api_key=os.getenv("CARTESIA_API_KEY"),
