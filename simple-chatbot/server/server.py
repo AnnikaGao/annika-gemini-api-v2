@@ -246,7 +246,7 @@ if __name__ == "__main__":
                 port=config.port,
                 reload=config.reload,
             )
-            # If uvicorn.run exits cleanly (e.g., ctrl+c), we might want to break the loop
+            # if uvicorn.run exits cleanly (e.g., ctrl+c), we might want to break the loop
             # However, for robustness against crashes, we let it loop.
             print("Server exited cleanly. Restarting...")
         except Exception as e:
