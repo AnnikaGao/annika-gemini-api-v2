@@ -47,6 +47,7 @@ bot_procs = {}
 # Store Daily API helpers
 daily_helpers = {}
 
+
 def cleanup():
     """Cleanup function to terminate all bot processes.
 
@@ -64,9 +65,7 @@ def get_bot_file():
     if not bot_implementation:
         bot_implementation = "openai"
     if bot_implementation not in ["openai", "gemini"]:
-        raise ValueError(
-            f"Invalid BOT_IMPLEMENTATION: {bot_implementation}. Must be 'openai' or 'gemini'"
-        )
+        raise ValueError(f"Invalid BOT_IMPLEMENTATION: {bot_implementation}. Must be 'openai' or 'gemini'")
     return f"bot-{bot_implementation}"
 
 
@@ -143,9 +142,7 @@ async def start_agent(request: Request):
     print(f"Room URL: {room_url}")
 
     # Check if there is already an existing process running in this room
-    num_bots_in_room = sum(
-        1 for proc in bot_procs.values() if proc[1] == room_url and proc[0].poll() is None
-    )
+    num_bots_in_room = sum(1 for proc in bot_procs.values() if proc[1] == room_url and proc[0].poll() is None)
     if num_bots_in_room >= MAX_BOTS_PER_ROOM:
         raise HTTPException(status_code=500, detail=f"Max bot limit reached for room: {room_url}")
 
@@ -225,6 +222,8 @@ def get_status(pid: int):
 
 if __name__ == "__main__":
     import uvicorn
+    import sys
+    import time
 
     # Parse command line arguments for server configuration
     default_host = os.getenv("HOST", "0.0.0.0")
@@ -237,10 +236,19 @@ if __name__ == "__main__":
 
     config = parser.parse_args()
 
-    # Start the FastAPI server
-    uvicorn.run(
-        "server:app",
-        host=config.host,
-        port=config.port,
-        reload=config.reload,
-    )
+    # Start the FastAPI server in an infinite loop
+    while True:
+        try:
+            print(f"Attempting to start server on {config.host}:{config.port}...")
+            uvicorn.run(
+                "server:app",
+                host=config.host,
+                port=config.port,
+                reload=config.reload,
+            )
+            # If uvicorn.run exits cleanly (e.g., ctrl+c), we might want to break the loop
+            # However, for robustness against crashes, we let it loop.
+            print("Server exited cleanly. Restarting...")
+        except Exception as e:
+            print(f"Error starting or running server: {e}")
+            print("Attempting to restart server in 5 seconds...")
