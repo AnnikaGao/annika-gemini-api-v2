@@ -207,6 +207,7 @@ async def main():
                 allow_interruptions=True,
                 enable_metrics=True,
                 enable_usage_metrics=True,
+                idle_timeout_secs=0,
             ),
             observers=[RTVIObserver(rtvi)],
         )
@@ -231,12 +232,17 @@ async def main():
         await runner.run(task)
 
 
+async def run_forever():
+    """Run `main()` repeatedly, whatever exit reason it has (quota, Ctrl-C, error)."""
+    session_id = os.getenv("SESSION_ID", "no-session")
+    while True:
+        try:
+            await main()  # returns when the pipeline finishes or errors
+            print(f"[{session_id}] Pipeline ended - restarting in 2 s …")
+        except Exception as e:
+            print(f"[{session_id}] Pipeline crashed: {e} - restarting in 2 s …")
+        await asyncio.sleep(2)  # small back‑off between runs
+
+
 if __name__ == "__main__":
-    try:
-        session_id = os.environ.get("SESSION_ID")  # this breaks the 10 mins limit
-        asyncio.run(main())
-    except Exception as e:
-        session_id = os.environ.get("SESSION_ID")
-        print(f">>> error occurred: {e}")
-        print(f">>> resuming session {session_id}...")
-        asyncio.run(main())
+    asyncio.run(run_forever())
