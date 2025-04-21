@@ -156,7 +156,7 @@ async def main():
             voice_id="Puck",  # Aoede, Charon, Fenrir, Kore, Puck
             transcribe_user_audio=True,
             enable_session_resumption=True,
-            params=InputParams(vad=GeminiVADParams(silence_duration_ms=300)),
+            params=InputParams(vad=GeminiVADParams(silence_duration_ms=500)),
         )
 
         memory = load_session_memory()
