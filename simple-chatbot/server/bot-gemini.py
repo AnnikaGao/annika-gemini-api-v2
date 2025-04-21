@@ -232,13 +232,11 @@ async def main():
 
 
 if __name__ == "__main__":
-    session_id = os.environ.get("SESSION_ID")  # this breaks the 10 mins limit
     try:
+        session_id = os.environ.get("SESSION_ID")  # this breaks the 10 mins limit
         asyncio.run(main())
     except Exception as e:
+        session_id = os.environ.get("SESSION_ID")
         print(f">>> error occurred: {e}")
-        if session_id:
-            print(f">>> resuming session {session_id}...")
-            asyncio.run(main())
-        else:
-            raise
+        print(f">>> resuming session {session_id}...")
+        asyncio.run(main())
