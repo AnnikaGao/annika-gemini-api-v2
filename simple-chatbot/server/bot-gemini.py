@@ -38,6 +38,7 @@ from dotenv import load_dotenv
 from loguru import logger
 from PIL import Image
 from runner import configure
+
 # import os
 
 # os.environ["HTTP_PROXY"] = "http://127.0.0.1:7897"
@@ -54,6 +55,8 @@ from pipecat.processors.frameworks.rtvi import RTVIConfig, RTVIObserver, RTVIPro
 from pipecat.processors.transcript_processor import TranscriptProcessor
 from pipecat.services.gemini_multimodal_live.gemini import GeminiMultimodalLiveLLMService, InputParams, GeminiVADParams
 from pipecat.transports.services.daily import DailyParams, DailyTransport
+
+from pipecat.services.gemini_multimodal_live.events import StartSensitivity, EndSensitivity
 
 load_dotenv(override=True)
 
@@ -156,7 +159,14 @@ async def main():
             voice_id="Puck",  # Aoede, Charon, Fenrir, Kore, Puck
             transcribe_user_audio=True,
             enable_session_resumption=True,
-            params=InputParams(vad=GeminiVADParams(silence_duration_ms=500)),
+            params=InputParams(
+                vad=GeminiVADParams(
+                    start_sensitivity=StartSensitivity.HIGH,
+                    # end_sensitivity=EndSensitivity.LOW,
+                    # prefix_padding_ms=300,
+                    silence_duration_ms=250,
+                )
+            ),
         )
 
         memory = load_session_memory()

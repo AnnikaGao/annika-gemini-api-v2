@@ -1,1 +1,1 @@
-conda activate gemini-api
+mamba activate gemini-api
