@@ -164,7 +164,7 @@ async def main():
                     start_sensitivity=StartSensitivity.HIGH,
                     # end_sensitivity=EndSensitivity.LOW,
                     # prefix_padding_ms=300,
-                    silence_duration_ms=250,
+                    silence_duration_ms=150,
                 )
             ),
         )
