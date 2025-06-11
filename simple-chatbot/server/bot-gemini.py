@@ -155,6 +155,8 @@ async def main():
 
         # Initialize the Gemini Multimodal Live model
         llm = GeminiMultimodalLiveLLMService(
+            # model="models/gemini-2.5-flash-preview-native-audio-dialog",  # NOTE amend this for diff models
+            model="models/gemini-2.0-flash-live-001",
             api_key=os.getenv("GEMINI_API_KEY"),
             voice_id="Puck",  # Aoede, Charon, Fenrir, Kore, Puck
             transcribe_user_audio=True,
@@ -162,9 +164,9 @@ async def main():
             params=InputParams(
                 vad=GeminiVADParams(
                     start_sensitivity=StartSensitivity.HIGH,
-                    # end_sensitivity=EndSensitivity.LOW,
-                    # prefix_padding_ms=300,
-                    silence_duration_ms=150,
+                    end_sensitivity=EndSensitivity.LOW,
+                    prefix_padding_ms=300,
+                    silence_duration_ms=300,
                 )
             ),
         )
